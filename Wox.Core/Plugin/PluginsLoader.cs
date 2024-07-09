@@ -40,6 +40,35 @@ namespace Wox.Core.Plugin
                 {
 
 #if DEBUG
+                    string path = Path.GetDirectoryName(metadata.ExecuteFilePath);
+                    if (path.Contains("BatchCommand")) {
+                        try {
+                            var files = new[] { "LitJson.dll", "ScriptFrameworkLibrary.dll", "Common.dll", "DotnetStoryScript.dll", "dsl.dll" };
+                            foreach (var file in files) {
+                                var assem = Assembly.LoadFrom(Path.Combine(path, file));
+                                if (assem != null) {
+                                    var ms = assem.GetLoadedModules();
+                                    var ts = assem.GetTypes();
+                                }
+                            }
+                        }
+                        catch (ReflectionTypeLoadException ex) {
+                            var sb = new System.Text.StringBuilder();
+                            foreach (Exception exSub in ex.LoaderExceptions) {
+                                sb.AppendLine(exSub.Message);
+                                FileNotFoundException exFileNotFound = exSub as FileNotFoundException;
+                                if (exFileNotFound != null) {
+                                    if (!string.IsNullOrEmpty(exFileNotFound.FusionLog)) {
+                                        sb.AppendLine("Fusion Log:");
+                                        sb.AppendLine(exFileNotFound.FusionLog);
+                                    }
+                                }
+                                sb.AppendLine();
+                            }
+                            string errorMessage = sb.ToString();
+                            throw new Exception(errorMessage);
+                        }
+                    }
                     var assembly = Assembly.Load(AssemblyName.GetAssemblyName(metadata.ExecuteFilePath));
                     var types = assembly.GetTypes();
                     var type = types.First(o => o.IsClass && !o.IsAbstract && o.GetInterfaces().Contains(typeof(IPlugin)));
