@@ -8,11 +8,28 @@ namespace Wox.Plugin
 
     public class Result : BaseModel
     {
-        private string _icoPath;
+        private string _annotation = string.Empty;
 
         public string Title { get; set; }
 
         public string SubTitle { get; set; }
+
+        public string Annotation
+        {
+            get {
+                if (string.IsNullOrEmpty(_annotation))
+                    return SubTitle;
+                return _annotation;
+            }
+            set {
+                if (value.StartsWith(SubTitle)) {
+                    _annotation = value;
+                }
+                else if (!_annotation.StartsWith(SubTitle)) {
+                    _annotation = string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// This holds the action keyword that triggered the result. 
